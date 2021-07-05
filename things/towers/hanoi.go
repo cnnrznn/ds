@@ -7,36 +7,50 @@ import (
 )
 
 type Hanoi struct {
-	s [3]stack.Stack
+	s      [3]stack.Stack
+	nmoves int
 }
 
 func main() {
-	h := &Hanoi{}
-	n := 10
+	for n := 1; n < 100; n++ {
+		h := &Hanoi{}
 
-	for i := n; i > 0; i-- {
-		h.s[0].Push(i)
+		for i := n; i > 0; i-- {
+			h.s[0].Push(i)
+		}
+
+		//h.Solve(0, 1, 2, n)
+		//fmt.Printf("%v solved in %v moves!\n", n, h.nmoves)
+
+		fmt.Println(n, CountHanoi(n))
 	}
-
-	h.Step(0, 1, 2, n)
 }
 
-func (h *Hanoi) Step(start, temp, target, n int) {
-	fmt.Printf("Level %v\n", n)
-	fmt.Println(h.s[0])
-	fmt.Println(h.s[1])
-	fmt.Println(h.s[2])
-	fmt.Println()
+func (h *Hanoi) Solve(start, temp, target, n int) {
+	//fmt.Printf("Level %v\n", n)
+	//fmt.Println(h.s[0])
+	//fmt.Println(h.s[1])
+	//fmt.Println(h.s[2])
+	//fmt.Println()
 	if n == 1 {
 		h.s[target].Push(h.s[start].Pop())
+		h.nmoves++
 		return
 	}
-	h.Step(start, target, temp, n-1)
+	h.Solve(start, target, temp, n-1)
 	h.s[target].Push(h.s[start].Pop())
-	h.Step(temp, start, target, n-1)
-	fmt.Printf("Level %v\n", n)
-	fmt.Println(h.s[0])
-	fmt.Println(h.s[1])
-	fmt.Println(h.s[2])
-	fmt.Println()
+	h.nmoves++
+	h.Solve(temp, start, target, n-1)
+	//fmt.Printf("Level %v\n", n)
+	//fmt.Println(h.s[0])
+	//fmt.Println(h.s[1])
+	//fmt.Println(h.s[2])
+	//fmt.Println()
+}
+
+func CountHanoi(n int) int {
+	if n == 1 {
+		return 1
+	}
+	return 1 + (2 * CountHanoi(n-1))
 }
