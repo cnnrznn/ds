@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/cnnrznn/ds/stack"
 )
@@ -12,15 +15,18 @@ type Hanoi struct {
 }
 
 func main() {
-	for n := 1; n < 30; n++ {
-		h := &Hanoi{}
-
-		for i := n; i > 0; i-- {
-			h.s[0].Push(i)
-		}
-
-		h.Solve(0, 1, 2, n)
+	n, err := strconv.Atoi(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	h := &Hanoi{}
+
+	for i := n; i > 0; i-- {
+		h.s[0].Push(i)
+	}
+
+	h.Solve(0, 1, 2, n)
 }
 
 func (h *Hanoi) Solve(start, temp, target, n int) {
