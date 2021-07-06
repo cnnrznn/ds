@@ -10,23 +10,16 @@ type Data struct {
 	ID  string
 }
 
-func CompareData(a, b interface{}) int {
+func LessData(a, b interface{}) bool {
 	x := a.(Data)
 	y := b.(Data)
 
-	switch {
-	case x.Val < y.Val:
-		return -1
-	case x.Val > y.Val:
-		return 1
-	default:
-		return 0
-	}
+	return x.Val < y.Val
 }
 
 func TestHeapSort(t *testing.T) {
 	n := 10
-	h := New(CompareData)
+	h := New(LessData)
 
 	for i := 0; i < n; i++ {
 

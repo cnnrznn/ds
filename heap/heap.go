@@ -1,17 +1,23 @@
+// Package heap provides a min-heap data structure
 package heap
 
+// Heap is a min-heap with the property that a parent node has a
+// value less than or equal to all of it's children. The 'Less' function
+// is provided to New when constructing a Heap.
 type Heap struct {
-	Data    []interface{}
-	Compare func(a, b interface{}) int
-	Size    int
+	Data []interface{}
+	Less func(a, b interface{}) bool
+	Size int
 }
 
-func New(compare func(a, b interface{}) int) *Heap {
+// New returns a fresh heap with the provided compare function.
+func New(less func(a, b interface{}) bool) *Heap {
 	return &Heap{
-		Compare: compare,
+		Less: less,
 	}
 }
 
+// Push an item onto the heap
 func (h *Heap) Push(data interface{}) {
 	h.Size++
 
@@ -19,6 +25,7 @@ func (h *Heap) Push(data interface{}) {
 	h.bubbleUp()
 }
 
+// Pop the minimum item from the heap and return it
 func (h *Heap) Pop() interface{} {
 	h.Size--
 
@@ -37,7 +44,7 @@ func (h *Heap) bubbleUp() {
 		if index == 0 {
 			break
 		}
-		if h.Compare(h.Data[index], h.Data[index/2]) >= 0 {
+		if !h.Less(h.Data[index], h.Data[index/2]) {
 			break
 		}
 
@@ -58,11 +65,11 @@ func (h *Heap) bubbleDown() {
 		}
 
 		child := baseIndex
-		if baseIndex+1 < h.Size && h.Compare(h.Data[baseIndex], h.Data[baseIndex+1]) > 0 {
+		if baseIndex+1 < h.Size && h.Less(h.Data[baseIndex+1], h.Data[baseIndex]) {
 			child = baseIndex + 1
 		}
 
-		if h.Compare(h.Data[index], h.Data[child]) <= 0 {
+		if h.Less(h.Data[index], h.Data[child]) {
 			break
 		}
 
