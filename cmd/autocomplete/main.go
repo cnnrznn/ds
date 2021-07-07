@@ -14,6 +14,17 @@ const (
 	listSize = 5
 )
 
+type Data struct {
+	Key   string
+	Count int
+}
+
+type ByCount []Data
+
+func (b ByCount) Less(i, j int) bool {
+	return b[i].Count < b[j].Count
+}
+
 // main reads from stdin the tags for each order note
 // it computes a count for each unique tag
 // it sorts this list of counts by count greates to smallest
@@ -34,7 +45,7 @@ func main() {
 
 	datas := []Data{}
 	for k, v := range counts {
-		fmt.Println(k, v)
+		//fmt.Println(k, v)
 		datas = append(datas, Data{
 			Key:   k,
 			Count: v,
@@ -45,15 +56,7 @@ func main() {
 	})
 
 	for _, data := range datas {
-		t.Insert(data.Key, func(node *trie.Node) {
-			if node.Data == nil {
-				node.Data = []Data{}
-			}
-			if len(node.Data.([]Data)) > listSize {
-				return
-			}
-			node.Data = append(node.Data.([]Data), data)
-		})
+		t.Insert(data.Key, updateCounts(data))
 	}
 
 	fmt.Println(getPrefixes(t, ""))
@@ -61,45 +64,16 @@ func main() {
 	fmt.Println(getPrefixes(t, "c"))
 
 	newTag := Data{
-		Key:   "created a new tag",
+		Key:   "created-a-new-tag",
 		Count: 10000,
 	}
+	lowCountTag := Data{
+		Key:   "can-not-see-this",
+		Count: 1,
+	}
 
-	t.Insert("created a new tag never before seen", func(node *trie.Node) {
-		node.Lock()
-		defer node.Unlock()
-
-		if node.Data == nil {
-			node.Data = []Data{}
-		}
-
-		datas := node.Data.([]Data)
-		insertAfter := -1
-		for i := len(datas) - 1; i >= 0; i-- {
-			if datas[i].Count > newTag.Count {
-				insertAfter = i
-				break
-			}
-			if datas[i].Key == newTag.Key {
-				datas[i].Count = newTag.Count
-				bubbleUp(datas, i)
-				node.Data = datas
-				return
-			}
-		}
-
-		dst := make([]Data, len(datas)+1)
-		copy(dst, datas[:insertAfter+1])
-		copy(dst[insertAfter+2:], datas[insertAfter+1:])
-		dst[insertAfter+1] = newTag
-		datas = dst
-
-		if len(datas) > listSize {
-			datas = datas[:listSize]
-		}
-
-		node.Data = datas
-	})
+	t.Insert(newTag.Key, updateCounts(newTag))
+	t.Insert(lowCountTag.Key, updateCounts(lowCountTag))
 
 	fmt.Println(getPrefixes(t, "c"))
 	fmt.Println(getPrefixes(t, "ca"))
@@ -120,13 +94,40 @@ func getPrefixes(t *trie.Trie, prefix string) []string {
 	return result
 }
 
-type Data struct {
-	Key   string
-	Count int
-}
+func updateCounts(tag Data) func(node *trie.Node) {
+	return func(node *trie.Node) {
+		node.Lock()
+		defer node.Unlock()
 
-type ByCount []Data
+		if node.Data == nil {
+			node.Data = []Data{}
+		}
 
-func (b ByCount) Less(i, j int) bool {
-	return b[i].Count < b[j].Count
+		datas := node.Data.([]Data)
+		insertAfter := -1
+		for i := len(datas) - 1; i >= 0; i-- {
+			if datas[i].Count > tag.Count {
+				insertAfter = i
+				break
+			}
+			if datas[i].Key == tag.Key {
+				datas[i].Count = tag.Count
+				bubbleUp(datas, i)
+				node.Data = datas
+				return
+			}
+		}
+
+		dst := make([]Data, len(datas)+1)
+		copy(dst, datas[:insertAfter+1])
+		copy(dst[insertAfter+2:], datas[insertAfter+1:])
+		dst[insertAfter+1] = tag
+		datas = dst
+
+		if len(datas) > listSize {
+			datas = datas[:listSize]
+		}
+
+		node.Data = datas
+	}
 }
