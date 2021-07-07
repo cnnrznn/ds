@@ -1,5 +1,7 @@
 package trie
 
+import "sync"
+
 type Trie struct {
 	Root *Node
 }
@@ -8,6 +10,7 @@ type Node struct {
 	Rune     string
 	Data     interface{}
 	Children map[string]*Node
+	sync.Mutex
 }
 
 func newNode(data string) *Node {
@@ -26,6 +29,7 @@ func New() *Trie {
 func (t *Trie) Insert(prefix string, callback func(*Node)) {
 	node := t.Root
 	for _, r := range prefix {
+		callback(node)
 		if _, ok := node.Children[string(r)]; !ok {
 			node.Children[string(r)] = &Node{
 				Rune:     string(r),
@@ -33,8 +37,8 @@ func (t *Trie) Insert(prefix string, callback func(*Node)) {
 			}
 		}
 		node = node.Children[string(r)]
-		callback(node)
 	}
+	callback(node)
 }
 
 func (t *Trie) Find(prefix string) *Node {
