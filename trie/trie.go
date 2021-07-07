@@ -23,7 +23,7 @@ func New() *Trie {
 	}
 }
 
-func (t *Trie) Insert(prefix string) {
+func (t *Trie) Insert(prefix string, callback func(*Node)) {
 	node := t.Root
 	for _, r := range prefix {
 		if _, ok := node.Children[string(r)]; !ok {
@@ -33,6 +33,7 @@ func (t *Trie) Insert(prefix string) {
 			}
 		}
 		node = node.Children[string(r)]
+		callback(node)
 	}
 }
 
