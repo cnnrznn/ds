@@ -32,6 +32,7 @@ func (h *Heap) Pop() interface{} {
 	tmp := h.Data[0]
 
 	h.Data[0] = h.Data[h.Size]
+	h.Data = h.Data[:h.Size]
 	h.bubbleDown()
 
 	return tmp
@@ -79,7 +80,5 @@ func (h *Heap) bubbleDown() {
 }
 
 func (h *Heap) swap(i, j int) {
-	tmp := h.Data[i]
-	h.Data[i] = h.Data[j]
-	h.Data[j] = tmp
+	h.Data[i], h.Data[j] = h.Data[j], h.Data[i]
 }
