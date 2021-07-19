@@ -42,15 +42,16 @@ func (h *Heap) bubbleUp() {
 	index := h.Size - 1
 
 	for {
+		parent := (index - 1) / 2
 		if index == 0 {
 			break
 		}
-		if !h.Less(h.Data[index], h.Data[index/2]) {
+		if !h.Less(h.Data[index], h.Data[parent]) {
 			break
 		}
 
-		h.swap(index, index/2)
-		index = index / 2
+		h.swap(index, parent)
+		index = parent
 	}
 }
 
@@ -58,16 +59,15 @@ func (h *Heap) bubbleDown() {
 	index := 0
 
 	for {
-		baseIndex := index*2 + 1
+		child := index*2 + 1
 
-		if baseIndex >= h.Size {
+		if child >= h.Size {
 			// at leaf
 			break
 		}
 
-		child := baseIndex
-		if baseIndex+1 < h.Size && h.Less(h.Data[baseIndex+1], h.Data[baseIndex]) {
-			child = baseIndex + 1
+		if child+1 < h.Size && h.Less(h.Data[child+1], h.Data[child]) {
+			child = child + 1
 		}
 
 		if h.Less(h.Data[index], h.Data[child]) {
