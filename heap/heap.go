@@ -4,21 +4,21 @@ package heap
 // Heap is a min-heap with the property that a parent node has a
 // value less than or equal to all of it's children. The 'Less' function
 // is provided to New when constructing a Heap.
-type Heap struct {
-	Data []interface{}
-	Less func(a, b interface{}) bool
+type Heap[T any] struct {
+	Data []T
+	Less func(a, b T) bool
 	Size int
 }
 
 // New returns a fresh heap with the provided compare function.
-func New(less func(a, b interface{}) bool) *Heap {
-	return &Heap{
+func New[T any](less func(a, b T) bool) *Heap[T] {
+	return &Heap[T]{
 		Less: less,
 	}
 }
 
 // Push an item onto the heap
-func (h *Heap) Push(data interface{}) {
+func (h *Heap[T]) Push(data T) {
 	h.Size++
 
 	h.Data = append(h.Data, data)
@@ -26,7 +26,7 @@ func (h *Heap) Push(data interface{}) {
 }
 
 // Pop the minimum item from the heap and return it
-func (h *Heap) Pop() interface{} {
+func (h *Heap[T]) Pop() T {
 	h.Size--
 
 	tmp := h.Data[0]
@@ -38,7 +38,7 @@ func (h *Heap) Pop() interface{} {
 	return tmp
 }
 
-func (h *Heap) bubbleUp() {
+func (h *Heap[T]) bubbleUp() {
 	index := h.Size - 1
 
 	for {
@@ -55,7 +55,7 @@ func (h *Heap) bubbleUp() {
 	}
 }
 
-func (h *Heap) bubbleDown() {
+func (h *Heap[T]) bubbleDown() {
 	index := 0
 
 	for {
@@ -79,6 +79,6 @@ func (h *Heap) bubbleDown() {
 	}
 }
 
-func (h *Heap) swap(i, j int) {
+func (h *Heap[T]) swap(i, j int) {
 	h.Data[i], h.Data[j] = h.Data[j], h.Data[i]
 }
