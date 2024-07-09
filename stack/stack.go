@@ -1,16 +1,16 @@
 package stack
 
-type Stack struct {
+type Stack[T any] struct {
 	Size int
-	Data []interface{}
+	Data []T
 }
 
-func (s *Stack) Push(data interface{}) {
+func (s *Stack[T]) Push(data T) {
 	s.Size++
 	s.Data = append(s.Data, data)
 }
 
-func (s *Stack) Pop() interface{} {
+func (s *Stack[T]) Pop() T {
 	s.Size--
 	tmp := s.Data[s.Size]
 	s.Data = s.Data[:s.Size]
