@@ -29,7 +29,8 @@ func (t *Tree[T]) Insert(Val T) {
 func (t *Tree[T]) insertLeaf(u *Node[T], Val T) (*Node[T], bool) {
 	if u == nil {
 		return &Node[T]{
-			Val: Val,
+			Val:    Val,
+			Height: 0,
 		}, true
 	}
 
@@ -166,6 +167,20 @@ func (t *Tree[T]) rotateRightLeft(u *Node[T]) *Node[T] {
 	return y
 }
 
+func (u *Node[T]) Balance() int {
+	lh := -1
+	if u.Left != nil {
+		return u.Left.Height
+	}
+
+	rh := -1
+	if u.Right != nil {
+		rh = u.Right.Height
+	}
+
+	return rh - lh
+}
+
 func (t *Tree[T]) String() string {
 	return t.buildTreeString(t.Root, "", 0)
 }
@@ -188,10 +203,4 @@ func (t *Tree[T]) buildTreeString(u *Node[T], prefix string, level int) string {
 	result += t.buildTreeString(u.Right, "R ", level+1)
 
 	return result
-}
-
-func (t *Tree[T]) PrintBalance() {
-	for k, v := range t.balance {
-		fmt.Printf("%v: %v\n", k.Val, v)
-	}
 }
