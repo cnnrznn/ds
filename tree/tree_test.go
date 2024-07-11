@@ -2,11 +2,14 @@ package tree
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"testing"
 )
 
-func TestAdd(t *testing.T) {
+// TODO use breadth-first traversal to assert tree structure after operations
+
+func TestInsert(t *testing.T) {
 	t.Run("123 tree", func(t *testing.T) {
 		a := New(func(a, b int) bool {
 			return a < b
@@ -39,5 +42,17 @@ func TestAdd(t *testing.T) {
 		}
 
 		fmt.Println(a)
+	})
+
+	t.Run("100 height", func(t *testing.T) {
+		a := New[int](func(a, b int) bool {
+			return a > b
+		})
+
+		for _, n := range rand.Perm(10000) {
+			a.Insert(n)
+		}
+
+		fmt.Printf("%v: %v\n", a.Root.Height, math.Log2(float64(10000)))
 	})
 }
