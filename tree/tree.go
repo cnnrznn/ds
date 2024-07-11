@@ -36,7 +36,7 @@ func (t *Tree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 
 	if t.Less(Val, u.Val) { // insert left
 		u.Left = t.insertLeaf(u.Left, Val)
-		u.Height = max(u.Left.Height, u.Right.Height) + 1
+		u.Height = max(u.Left.height(), u.Right.height()) + 1
 
 		if u.Balance() == -2 {
 			if u.Left.Balance() > 0 { // left-right
