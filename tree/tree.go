@@ -5,9 +5,15 @@ import (
 	"fmt"
 )
 
-type Tree[T any] struct {
-	Root *Node[T]
-	Less func(a, b T) bool
+type Tree[T any] interface {
+	Insert(x T)
+	Find(x T) *T
+	Height() int
+}
+
+type avlTree[T any] struct {
+	Root    *Node[T]
+	Compare func(a, b T) int // < 0 if a < b, > 0 if b > a, 0 iff a == b
 }
 
 type Node[T any] struct {
@@ -16,17 +22,35 @@ type Node[T any] struct {
 	Val         T
 }
 
-func New[T any](Less func(a, b T) bool) *Tree[T] {
-	return &Tree[T]{
-		Less: Less,
+func New[T any](Compare func(a, b T) int) Tree[T] {
+	return &avlTree[T]{
+		Compare: Compare,
 	}
 }
 
-func (t *Tree[T]) Insert(Val T) {
+func (t *avlTree[T]) Height() int {
+	return t.Root.height()
+}
+
+func (t *avlTree[T]) Find(x T) *T {
+	u := t.Root
+	for u != nil {
+		if t.Compare(x, u.Val) == 0 {
+			return &u.Val
+		} else if t.Compare(x, u.Val) < 0 {
+			u = u.Left
+		} else {
+			u = u.Right
+		}
+	}
+	return nil
+}
+
+func (t *avlTree[T]) Insert(Val T) {
 	t.Root = t.insertLeaf(t.Root, Val)
 }
 
-func (t *Tree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
+func (t *avlTree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 	if u == nil {
 		return &Node[T]{
 			Val:    Val,
@@ -34,7 +58,7 @@ func (t *Tree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 		}
 	}
 
-	if t.Less(Val, u.Val) { // insert left
+	if t.Compare(Val, u.Val) < 0 { // insert left
 		u.Left = t.insertLeaf(u.Left, Val)
 		u.Height = max(u.Left.height(), u.Right.height()) + 1
 
@@ -61,7 +85,7 @@ func (t *Tree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 	return u
 }
 
-func (t *Tree[T]) rotateLeft(u *Node[T]) *Node[T] {
+func (t *avlTree[T]) rotateLeft(u *Node[T]) *Node[T] {
 	x, z := u, u.Right
 	t2 := z.Left
 
@@ -74,7 +98,7 @@ func (t *Tree[T]) rotateLeft(u *Node[T]) *Node[T] {
 	return z
 }
 
-func (t *Tree[T]) rotateRight(u *Node[T]) *Node[T] {
+func (t *avlTree[T]) rotateRight(u *Node[T]) *Node[T] {
 	x, z := u, u.Left
 	t2 := z.Right
 
@@ -87,7 +111,7 @@ func (t *Tree[T]) rotateRight(u *Node[T]) *Node[T] {
 	return z
 }
 
-func (t *Tree[T]) rotateLeftRight(u *Node[T]) *Node[T] {
+func (t *avlTree[T]) rotateLeftRight(u *Node[T]) *Node[T] {
 	x, z, y := u, u.Left, u.Left.Right
 	t2 := y.Left
 	t3 := y.Right
@@ -105,7 +129,7 @@ func (t *Tree[T]) rotateLeftRight(u *Node[T]) *Node[T] {
 	return y
 }
 
-func (t *Tree[T]) rotateRightLeft(u *Node[T]) *Node[T] {
+func (t *avlTree[T]) rotateRightLeft(u *Node[T]) *Node[T] {
 	x, z, y := u, u.Right, u.Right.Left
 	t2 := y.Left
 	t3 := y.Right
@@ -134,11 +158,11 @@ func (u *Node[T]) height() int {
 	return u.Height
 }
 
-func (t *Tree[T]) String() string {
+func (t *avlTree[T]) String() string {
 	return t.buildTreeString(t.Root, "", 0)
 }
 
-func (t *Tree[T]) buildTreeString(u *Node[T], prefix string, level int) string {
+func (t *avlTree[T]) buildTreeString(u *Node[T], prefix string, level int) string {
 	if u == nil {
 		return ""
 	}
