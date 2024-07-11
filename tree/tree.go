@@ -13,7 +13,7 @@ type Tree[T any] interface {
 
 type avlTree[T any] struct {
 	Root    *Node[T]
-	Compare func(a, b T) int // < 0 if a < b, > 0 if b > a, 0 iff a == b
+	Compare func(a, b T) int // < 0 if a < b, > 0 if a > b, 0 iff a == b
 }
 
 type Node[T any] struct {
