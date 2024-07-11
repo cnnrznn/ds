@@ -23,58 +23,42 @@ func New[T any](Less func(a, b T) bool) *Tree[T] {
 }
 
 func (t *Tree[T]) Insert(Val T) {
-	t.Root, _ = t.insertLeaf(t.Root, Val)
+	t.Root = t.insertLeaf(t.Root, Val)
 }
 
-func (t *Tree[T]) insertLeaf(u *Node[T], Val T) (*Node[T], bool) {
+func (t *Tree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 	if u == nil {
 		return &Node[T]{
 			Val:    Val,
-			Height: 0,
-		}, true
+			Height: 1,
+		}
 	}
 
-	var changed bool
+	if t.Less(Val, u.Val) { // insert left
+		u.Left = t.insertLeaf(u.Left, Val)
+		u.Height = max(u.Left.Height, u.Right.Height) + 1
 
-	if t.Less(Val, u.Val) {
-		u.Left, changed = t.insertLeaf(u.Left, Val)
-		if !changed {
-			return u, false
-		}
-
-		if t.balance[u] < 0 { // doubly left heavy
-			if t.balance[u.Left] > 0 { // left-right
+		if u.Balance() == -2 {
+			if u.Left.Balance() > 0 { // left-right
 				u = t.rotateLeftRight(u)
-			} else {
+			} else { // right
 				u = t.rotateRight(u)
 			}
-		} else {
-			t.balance[u] -= 1
-			if t.balance[u] == 0 {
-				return u, false
-			}
 		}
-	} else {
-		u.Right, changed = t.insertLeaf(u.Right, Val)
-		if !changed {
-			return u, false
-		}
+	} else { // insert right
+		u.Right = t.insertLeaf(u.Right, Val)
+		u.Height = max(u.Left.height(), u.Right.height()) + 1
 
-		if t.balance[u] > 0 { // doubly right heavy
-			if t.balance[u.Right] < 0 { // right-left
+		if u.Balance() == 2 {
+			if u.Right.Balance() < 0 {
 				u = t.rotateRightLeft(u)
-			} else { // left
+			} else {
 				u = t.rotateLeft(u)
-			}
-		} else { // left heavy or neutral
-			t.balance[u] += 1
-			if t.balance[u] == 0 {
-				return u, false
 			}
 		}
 	}
 
-	return u, true
+	return u
 }
 
 func (t *Tree[T]) rotateLeft(u *Node[T]) *Node[T] {
@@ -84,13 +68,8 @@ func (t *Tree[T]) rotateLeft(u *Node[T]) *Node[T] {
 	x.Right = t2
 	z.Left = x
 
-	if t.balance[z] == 0 {
-		t.balance[x] = 1
-		t.balance[z] = -1
-	} else {
-		t.balance[x] = 0
-		t.balance[z] = 0
-	}
+	x.Height = max(x.Left.height(), x.Right.height()) + 1
+	z.Height = max(z.Left.height(), z.Right.height()) + 1
 
 	return z
 }
@@ -102,13 +81,8 @@ func (t *Tree[T]) rotateRight(u *Node[T]) *Node[T] {
 	x.Left = t2
 	z.Right = x
 
-	if t.balance[z] == 0 {
-		t.balance[x] = -1
-		t.balance[z] = 1
-	} else {
-		t.balance[x] = 0
-		t.balance[z] = 0
-	}
+	x.Height = max(x.Left.height(), x.Right.height()) + 1
+	z.Height = max(z.Left.height(), z.Right.height()) + 1
 
 	return z
 }
@@ -124,18 +98,9 @@ func (t *Tree[T]) rotateLeftRight(u *Node[T]) *Node[T] {
 	x.Left = t3
 	y.Right = x
 
-	if t.balance[y] == 0 {
-		t.balance[x] = 0
-		t.balance[z] = 0
-	} else if t.balance[y] < 0 {
-		t.balance[x] = 1
-		t.balance[z] = 0
-	} else {
-		t.balance[x] = 0
-		t.balance[z] = -1
-	}
-
-	t.balance[y] = 0
+	x.Height = max(x.Left.height(), x.Right.height()) + 1
+	z.Height = max(z.Left.height(), z.Right.height()) + 1
+	y.Height = max(y.Left.height(), y.Right.height()) + 1
 
 	return y
 }
@@ -151,34 +116,22 @@ func (t *Tree[T]) rotateRightLeft(u *Node[T]) *Node[T] {
 	x.Right = t2
 	y.Left = x
 
-	if t.balance[y] == 0 { // height t2 same as t3
-		t.balance[x] = 0
-		t.balance[z] = 0
-	} else if t.balance[y] < 0 { // t2 higher
-		t.balance[x] = 0
-		t.balance[z] = 1
-	} else { // t3 higher
-		t.balance[x] = -1
-		t.balance[z] = 0
-	}
-
-	t.balance[y] = 0
+	x.Height = max(x.Left.height(), x.Right.height()) + 1
+	z.Height = max(z.Left.height(), z.Right.height()) + 1
+	y.Height = max(y.Left.height(), y.Right.height()) + 1
 
 	return y
 }
 
 func (u *Node[T]) Balance() int {
-	lh := -1
-	if u.Left != nil {
-		return u.Left.Height
-	}
+	return u.Right.height() - u.Left.height()
+}
 
-	rh := -1
-	if u.Right != nil {
-		rh = u.Right.Height
+func (u *Node[T]) height() int {
+	if u == nil {
+		return 0
 	}
-
-	return rh - lh
+	return u.Height
 }
 
 func (t *Tree[T]) String() string {
@@ -198,7 +151,7 @@ func (t *Tree[T]) buildTreeString(u *Node[T], prefix string, level int) string {
 
 	result := ""
 
-	result += fmt.Sprintf("%v %v %v\n", levelStr, prefix, u.Val)
+	result += fmt.Sprintf("%v %v (%v, %v)\n", levelStr, prefix, u.Val, u.Height)
 	result += t.buildTreeString(u.Left, "L ", level+1)
 	result += t.buildTreeString(u.Right, "R ", level+1)
 

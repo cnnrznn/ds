@@ -26,7 +26,6 @@ func TestAdd(t *testing.T) {
 		for i := 1; i <= 10; i++ {
 			a.Insert(i)
 			fmt.Println(a)
-			a.PrintBalance()
 			fmt.Println("=====================")
 		}
 	})
