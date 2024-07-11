@@ -10,7 +10,7 @@ import (
 )
 
 type Hanoi struct {
-	s      [3]stack.Stack
+	s      [3]stack.Stack[int]
 	nmoves int
 }
 
