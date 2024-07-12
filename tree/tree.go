@@ -60,7 +60,6 @@ func (t *avlTree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 
 	if t.Compare(Val, u.Val) < 0 { // insert left
 		u.Left = t.insertLeaf(u.Left, Val)
-		u.Height = max(u.Left.height(), u.Right.height()) + 1
 
 		if u.Balance() == -2 {
 			if u.Left.Balance() > 0 { // left-right
@@ -71,7 +70,6 @@ func (t *avlTree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 		}
 	} else { // insert right
 		u.Right = t.insertLeaf(u.Right, Val)
-		u.Height = max(u.Left.height(), u.Right.height()) + 1
 
 		if u.Balance() == 2 {
 			if u.Right.Balance() < 0 {
@@ -81,6 +79,8 @@ func (t *avlTree[T]) insertLeaf(u *Node[T], Val T) *Node[T] {
 			}
 		}
 	}
+
+	u.Height = max(u.Left.height(), u.Right.height()) + 1
 
 	return u
 }
